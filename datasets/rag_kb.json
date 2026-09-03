@@ -1,0 +1,38 @@
+[
+  {
+    "id": "kb_rag_1",
+    "topic": "Retrieval-Augmented Generation (RAG)",
+    "category": "AI/ML Concepts",
+    "content": "Retrieval-Augmented Generation (RAG) is an architectural pattern that enhances Large Language Models (LLMs) by retrieving authoritative, relevant factual data from an external vector index (such as ChromaDB or Pinecone) before generating a response. This eliminates hallucinations, allows querying domain-specific documents (e.g. PDFs, private codebases), and provides clear source attribution without expensive model retraining."
+  },
+  {
+    "id": "kb_langchain_1",
+    "topic": "LangChain Framework",
+    "category": "GenAI Frameworks",
+    "content": "LangChain is an open-source framework designed to simplify the creation of applications using LLMs. Key components include Document Loaders, Text Splitters, Vector Stores, Retrievers, Prompt Templates, Chains, and Agents. In RAG pipelines, LangChain coordinates embedding document chunks, performing similarity searches, and passing retrieved context into LLM prompts."
+  },
+  {
+    "id": "kb_fastapi_1",
+    "topic": "FastAPI Framework & Asynchronous Architecture",
+    "category": "Backend Engineering",
+    "content": "FastAPI is a modern, high-performance web framework for building APIs with Python based on standard Python type hints. Built on Starlette and Pydantic, it supports asynchronous request handling (`async/await`), automatic OpenAPI UI generation (`/docs`), and high execution speed comparable to NodeJS and Go."
+  },
+  {
+    "id": "kb_resume_1",
+    "topic": "Resume Optimization & ATS Best Practices",
+    "category": "Career Strategy",
+    "content": "To pass Applicant Tracking Systems (ATS) and impress hiring managers, tech resumes must feature quantifiable achievements (e.g. 'Reduced API latency by 45% using Redis caching'), explicit technical keywords aligned with the target Job Description, standard single-column layout, and clear repository links demonstrating hands-on project implementations."
+  },
+  {
+    "id": "kb_interview_1",
+    "topic": "Technical Interview Preparation Strategy",
+    "category": "Interview Mastery",
+    "content": "Effective technical interview preparation relies on the STAR method (Situation, Task, Action, Result) for behavioral questions, combined with deep architectural knowledge for system design (explaining trade-offs, scalability, data modeling, caching strategies, and API security). When asked about weak technical areas, highlight practical projects currently being built to bridge those gaps."
+  },
+  {
+    "id": "kb_vector_db_1",
+    "topic": "ChromaDB & Vector Embeddings",
+    "category": "AI Infrastructure",
+    "content": "ChromaDB is an open-source embedding database built for AI applications. It enables fast semantic vector search by converting text into high-dimensional numerical vectors (e.g., using BAAI/bge-small-en-v1.5 or sentence-transformers). Given a user query, Chroma computes Cosine or L2 distance to retrieve the most semantically relevant text chunks."
+  }
+]

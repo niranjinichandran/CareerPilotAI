@@ -1,0 +1,66 @@
+[
+  {
+    "id": "proj_med_rag",
+    "title": "Medical Document AI Assistant & Explainer",
+    "target_missing_skills": ["RAG", "LangChain", "Prompt Engineering", "FastAPI", "ChromaDB"],
+    "description": "Build an enterprise-grade medical documentation QA platform that ingests clinical PDFs, chunks text using semantic splitters, indexes embeddings in ChromaDB, and uses LangChain + RAG to answer clinical queries with page-level citations.",
+    "difficulty": "Intermediate to Advanced",
+    "estimated_hours": 24,
+    "tech_stack": ["Python", "FastAPI", "LangChain", "ChromaDB", "Streamlit", "PyMuPDF"],
+    "key_deliverables": [
+      "PDF chunking & embedding pipeline with BAAI/bge embeddings",
+      "FastAPI REST endpoint for hybrid search and context retrieval",
+      "Streamlit UI with source page highlighting and citation viewer",
+      "Evaluation script calculating faithfulness & context precision"
+    ],
+    "repo_structure": "med-rag-assistant/\n├── backend/\n│   ├── main.py\n│   ├── rag_engine.py\n│   └── vector_store.py\n├── frontend/\n│   └── app.py\n├── data/\n└── tests/\n    └── test_rag.py"
+  },
+  {
+    "id": "proj_smart_resume_screener",
+    "title": "AI Candidate Screening & Skill Gap Predictor",
+    "target_missing_skills": ["Scikit-Learn", "FastAPI", "Pandas", "Python", "Streamlit"],
+    "description": "Develop an automated candidate resume screener that extracts candidate skills using NLP, predicts job fit using a trained Scikit-Learn Random Forest model, and provides transparent feature importance breakdowns for recruiter decision support.",
+    "difficulty": "Intermediate",
+    "estimated_hours": 18,
+    "tech_stack": ["Python", "Scikit-Learn", "Pandas", "NumPy", "FastAPI", "Streamlit"],
+    "key_deliverables": [
+      "Feature engineering pipeline mapping resume text to skill vectors",
+      "Scikit-Learn classifier predicting candidate match likelihood",
+      "Shapley/Feature importance explanation dashboard",
+      "FastAPI endpoint returning JSON fit scores and missing skill alerts"
+    ],
+    "repo_structure": "ai-resume-screener/\n├── model/\n│   ├── train.py\n│   └── predictor.py\n├── api/\n│   └── main.py\n└── dashboard/\n    └── app.py"
+  },
+  {
+    "id": "proj_code_auditor_agent",
+    "title": "Autonomous Code Security & Architecture Review Agent",
+    "target_missing_skills": ["LangChain", "Prompt Engineering", "Docker", "System Design", "LLM"],
+    "description": "Build an autonomous AI agent that accepts GitHub repository URLs, containerizes analysis in Docker, inspects Python/JS source code for security vulnerabilities (OWASP top 10), and produces automated pull-request code reviews.",
+    "difficulty": "Advanced",
+    "estimated_hours": 30,
+    "tech_stack": ["Python", "LangChain", "Docker", "FastAPI", "OpenAI API", "Git"],
+    "key_deliverables": [
+      "Dockerized sandbox environment for static code analysis",
+      "Multi-step LangChain agent workflow with feedback reflection",
+      "Custom system prompts for AST parsing & vulnerability detection",
+      "Automated markdown report generator with code fix diffs"
+    ],
+    "repo_structure": "code-auditor-agent/\n├── agent/\n│   ├── evaluator.py\n│   └── prompts.py\n├── sandbox/\n│   └── Dockerfile\n└── app.py"
+  },
+  {
+    "id": "proj_microservices_api_gateway",
+    "title": "Scalable Microservices Gateway & Rate-Limiting Engine",
+    "target_missing_skills": ["FastAPI", "Docker", "Redis", "REST APIs", "Microservices"],
+    "description": "Design and deploy an asynchronous FastAPI API gateway featuring token bucket rate limiting via Redis, JWT user authentication middleware, dynamic service discovery, and Prometheus metric tracking.",
+    "difficulty": "Intermediate to Advanced",
+    "estimated_hours": 20,
+    "tech_stack": ["FastAPI", "Redis", "Docker", "Docker Compose", "JWT", "Python"],
+    "key_deliverables": [
+      "Async FastAPI gateway handling reverse proxy routes",
+      "Redis sliding-window rate limiter preventing API abuse",
+      "JWT authentication middleware with role-based access control",
+      "Docker Compose stack orchestrating services & Redis"
+    ],
+    "repo_structure": "api-gateway-service/\n├── gateway/\n│   ├── main.py\n│   ├── auth.py\n│   └── limiter.py\n├── docker-compose.yml\n└── README.md"
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "categories": {
+    "AI/ML & GenAI": [
+      "Python", "PyTorch", "TensorFlow", "Scikit-Learn", "LangChain", "LlamaIndex",
+      "ChromaDB", "Pinecone", "RAG", "Prompt Engineering", "LLM", "Fine-Tuning",
+      "Transformers", "Hugging Face", "Computer Vision", "NLP", "BERT", "OpenAI API"
+    ],
+    "Backend & APIs": [
+      "FastAPI", "Flask", "Django", "REST APIs", "GraphQL", "Node.js", "Express.js",
+      "Java", "Spring Boot", "Go", "C++", "Microservices", "gRPC", "Celery", "Redis"
+    ],
+    "Frontend & Web": [
+      "HTML5", "CSS3", "JavaScript", "TypeScript", "React", "Next.js", "Vue.js",
+      "Streamlit", "Tailwind CSS", "Redux"
+    ],
+    "Data & Cloud": [
+      "SQL", "PostgreSQL", "SQLite", "MongoDB", "Pandas", "NumPy", "Docker",
+      "Kubernetes", "AWS", "Azure", "GCP", "Git", "GitHub Actions", "CI/CD", "Linux"
+    ],
+    "CS Fundamentals": [
+      "Data Structures", "Algorithms", "System Design", "Object-Oriented Programming",
+      "Design Patterns", "Database Design", "Operating Systems", "Networking"
+    ]
+  },
+  "skill_weights": {
+    "RAG": 0.95,
+    "LangChain": 0.90,
+    "Prompt Engineering": 0.88,
+    "FastAPI": 0.85,
+    "Python": 0.90,
+    "PyTorch": 0.88,
+    "Scikit-Learn": 0.82,
+    "LLM": 0.92,
+    "ChromaDB": 0.85,
+    "Transformers": 0.86,
+    "Docker": 0.80,
+    "SQL": 0.82,
+    "System Design": 0.88,
+    "React": 0.78,
+    "TypeScript": 0.76
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "Prompt Engineering": {
+    "job_frequency_pct": 92,
+    "target_roles": ["AI Engineer", "GenAI Developer", "LLM Engineer"],
+    "paired_skills": ["LLM", "RAG", "LangChain", "OpenAI API"],
+    "market_insight": "Prompt Engineering appears in 92% of active AI Engineer roles. Employers expect candidates to design structured, few-shot, and system prompts for production agentic pipelines.",
+    "demand_trend": "Extremely High (+140% YoY)"
+  },
+  "LangChain": {
+    "job_frequency_pct": 88,
+    "target_roles": ["AI Engineer", "LLM Application Developer", "GenAI Engineer"],
+    "paired_skills": ["RAG", "ChromaDB", "Python", "Prompt Engineering"],
+    "market_insight": "LangChain is requested in 88% of GenAI job specifications as the standard orchestration framework for multi-modal agents and vector search pipelines.",
+    "demand_trend": "Very High (+115% YoY)"
+  },
+  "RAG": {
+    "job_frequency_pct": 95,
+    "target_roles": ["AI Engineer", "RAG Architect", "GenAI Developer"],
+    "paired_skills": ["ChromaDB", "LangChain", "Vector Embeddings", "FastAPI"],
+    "market_insight": "Retrieval-Augmented Generation (RAG) is the #1 enterprise requirement for enterprise LLM deployment, reducing hallucination in 95% of job descriptions.",
+    "demand_trend": "Extremely High (+180% YoY)"
+  },
+  "FastAPI": {
+    "job_frequency_pct": 84,
+    "target_roles": ["Backend Developer", "AI Engineer", "MLOps Engineer"],
+    "paired_skills": ["Python", "Docker", "REST APIs", "AsyncIO", "Pydantic"],
+    "market_insight": "FastAPI is specified in 84% of modern Python backend and AI serving job posts due to its asynchronous performance and automatic OpenAPI generation.",
+    "demand_trend": "High (+65% YoY)"
+  },
+  "ChromaDB": {
+    "job_frequency_pct": 79,
+    "target_roles": ["AI Engineer", "Vector Database Engineer", "GenAI Developer"],
+    "paired_skills": ["RAG", "LangChain", "Sentence Transformers", "Python"],
+    "market_insight": "ChromaDB is featured in 79% of open-source GenAI stack postings as the leading lightweight local & cloud vector database.",
+    "demand_trend": "High (+95% YoY)"
+  },
+  "Docker": {
+    "job_frequency_pct": 82,
+    "target_roles": ["DevOps Engineer", "Software Engineer", "AI Engineer", "MLOps Engineer"],
+    "paired_skills": ["Kubernetes", "Linux", "CI/CD", "FastAPI"],
+    "market_insight": "Docker containerization is required in 82% of software and AI engineering positions to guarantee reproducible deployment across staging and production.",
+    "demand_trend": "Stable High (+30% YoY)"
+  },
+  "PyTorch": {
+    "job_frequency_pct": 86,
+    "target_roles": ["ML Engineer", "AI Researcher", "Computer Vision Engineer"],
+    "paired_skills": ["Python", "CUDA", "Transformers", "Scikit-Learn"],
+    "market_insight": "PyTorch is requested in 86% of deep learning and model fine-tuning positions, making it the dominant framework for deep learning research and deployment.",
+    "demand_trend": "Very High (+50% YoY)"
+  },
+  "System Design": {
+    "job_frequency_pct": 91,
+    "target_roles": ["Senior Software Engineer", "Tech Lead", "AI Solutions Architect"],
+    "paired_skills": ["Microservices", "Scalability", "Database Design", "Redis"],
+    "market_insight": "System Design is evaluated in 91% of senior technical interviews to test architectural decision-making, caching, scalability, and load handling.",
+    "demand_trend": "Constant High"
+  }
+}
