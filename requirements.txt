@@ -3,9 +3,13 @@ uvicorn
 streamlit
 python-dotenv
 pydantic
+pydantic-settings
 sqlalchemy
 passlib[bcrypt]
 pyjwt
+python-jose[cryptography]
+email-validator
+requests
 pymupdf
 python-docx
 scikit-learn
