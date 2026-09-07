@@ -1,20 +1,55 @@
+import json
 import streamlit as st
-import requests
-
-API_BASE_URL = "http://127.0.0.1:8000/api"
+from backend.core.database import SessionLocal
+from backend.models.skill import AnalysisResultModel
+from ai.opportunity_simulator import OpportunitySimulator
 
 def render_simulator_page():
+    user = st.session_state.get("user")
+    user_id = user.get("id") if user else None
+    user_name = user.get("full_name", "Candidate") if user else "Candidate"
+    target_role = user.get("target_role", "Custom Career Role") if user else "Custom Career Role"
+
     st.markdown("""
         <div class="glass-card">
             <h2>⚡ Skill Impact & Career Opportunity Simulator</h2>
-            <p style="color:#94a3b8;">Select skills you plan to learn. The simulator recalculates your candidate match score, shows newly covered requirements, and highlights unlocked target job roles.</p>
+            <p style="color:#94a3b8;">Select missing skills you plan to learn. The simulator recalculates your candidate match score, shows newly covered requirements, and highlights unlocked target job roles.</p>
         </div>
     """, unsafe_allow_html=True)
 
     match_data = st.session_state.get("match_data")
-    current_score = match_data.get("overall_match_percentage", 68.5) if match_data else 68.5
-    missing_skills = match_data.get("missing_skills", ["RAG", "LangChain", "Prompt Engineering", "ChromaDB"]) if match_data else ["RAG", "LangChain", "Prompt Engineering", "ChromaDB"]
-    current_skills = st.session_state.get("resume_skills", ["Python", "FastAPI", "SQL", "Git", "Docker"])
+    if not match_data and user_id:
+        db = SessionLocal()
+        try:
+            record = db.query(AnalysisResultModel).filter(AnalysisResultModel.user_id == user_id).order_by(AnalysisResultModel.id.desc()).first()
+            if record:
+                match_data = {
+                    "overall_match_percentage": round(record.match_score, 1),
+                    "matched_skills": json.loads(record.matched_skills_json or "[]"),
+                    "missing_skills": json.loads(record.missing_skills_json or "[]")
+                }
+                st.session_state["match_data"] = match_data
+        except Exception:
+            match_data = None
+        finally:
+            db.close()
+
+    if not match_data:
+        st.markdown(f"""
+            <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid #6366f1; border-radius: 14px; padding: 24px; text-align: center; margin: 20px 0;">
+                <h3 style="color:#818cf8; margin-top:0;">📄 Resume Upload Required</h3>
+                <p style="color:#cbd5e1; font-size:15px;">Welcome {user_name}! Please upload your resume in <b>📄 Resume & JD Analysis</b> to enable the Skill Impact Simulator.</p>
+            </div>
+        """, unsafe_allow_html=True)
+        return
+
+    current_score = match_data.get("overall_match_percentage", 65.0)
+    missing_skills = match_data.get("missing_skills", [])
+    current_skills = st.session_state.get("resume_skills") or match_data.get("matched_skills", [])
+
+    if not missing_skills:
+        st.success("🎉 You have matched all required skills! No missing skills to simulate.")
+        return
 
     st.subheader("1. Select Skills to Simulate Learning")
     selected_to_learn = st.multiselect(
@@ -23,38 +58,18 @@ def render_simulator_page():
         default=missing_skills[:2] if len(missing_skills) >= 2 else missing_skills
     )
 
-    if st.button("🔮 Run Skill Impact Simulation", type="primary"):
+    if st.button("🔮 Run Skill Impact Simulation", type="primary", use_container_width=True):
         if not selected_to_learn:
             st.warning("Please select at least one skill to simulate.")
         else:
             with st.spinner("Calculating scenario score impact..."):
-                try:
-                    res = requests.post(
-                        f"{API_BASE_URL}/simulator/run",
-                        json={
-                            "current_skills": current_skills,
-                            "selected_to_learn": selected_to_learn,
-                            "current_match_score": current_score,
-                            "target_role": "AI Engineer"
-                        },
-                        timeout=5
-                    )
-                    sim = res.json()
-                except Exception:
-                    sim = {
-                        "current_job_match": current_score,
-                        "estimated_job_match_after": min(96.0, round(current_score + len(selected_to_learn) * 7.0, 1)),
-                        "estimated_improvement": round(len(selected_to_learn) * 7.0, 1),
-                        "newly_covered_requirements": selected_to_learn,
-                        "remaining_skill_gaps": [s for s in missing_skills if s not in selected_to_learn],
-                        "unlocked_roles": [
-                            {"role_title": "AI Engineer", "fit_percentage": 88.0, "status": "Highly Aligned 🚀"},
-                            {"role_title": "GenAI Developer", "fit_percentage": 82.0, "status": "Aligned 📈"}
-                        ],
-                        "estimated_learning_time_weeks": max(2, len(selected_to_learn) * 2),
-                        "score_change_justification": f"Learning {', '.join(selected_to_learn)} directly covers key job requirements, increasing your skill score.",
-                        "disclaimer": "Estimated scenario based on CareerPilot AI's scoring model."
-                    }
+                simulator = OpportunitySimulator()
+                sim = simulator.simulate_skill_acquisition(
+                    current_skills=current_skills,
+                    selected_to_learn=selected_to_learn,
+                    current_match_score=current_score,
+                    target_role=target_role
+                )
 
                 st.markdown("---")
                 st.markdown(f"> ℹ️ **Disclaimer:** *{sim['disclaimer']}*")
@@ -78,6 +93,6 @@ def render_simulator_page():
                         st.markdown(f"- `<span class='badge-missing'>{s}</span>`", unsafe_allow_html=True)
 
                 st.markdown("---")
-                st.subheader("💼 Unlocked Eligible Roles")
+                st.subheader(f"💼 Unlocked Eligible Roles for {target_role}")
                 for r in sim["unlocked_roles"]:
                     st.markdown(f"- **{r['role_title']}** (`{r['fit_percentage']}% Fit`) — {r['status']}")

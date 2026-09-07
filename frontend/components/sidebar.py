@@ -18,8 +18,8 @@ def render_sidebar():
             st.caption("Powered by FastAPI • ChromaDB • Streamlit")
             return "🔑 Auth"
         else:
-            st.markdown(f"👤 **Candidate:** {user.get('full_name', 'Candidate')}")
-            st.markdown(f"🎯 **Target Role:** {user.get('target_role', 'AI Engineer')}")
+            st.markdown(f"👤 **Candidate Name:** {user.get('full_name', 'Candidate')}")
+            st.markdown(f"🎯 **Target Role:** {user.get('target_role', 'Custom Role')}")
             st.markdown("---")
 
             menu_options = [
@@ -38,9 +38,14 @@ def render_sidebar():
             selected_menu = st.radio("Platform Navigation", menu_options)
             st.markdown("---")
             
-            if st.button("🔒 Sign Out / Logout", use_container_width=True):
+            if st.button("🔒 Sign Out / Logout Candidate", use_container_width=True):
+                # Clear all user session data
                 st.session_state["user"] = None
-                st.session_state["token"] = None
+                st.session_state["match_data"] = None
+                st.session_state["parsed_skills"] = []
+                st.session_state["resume_skills"] = []
+                st.session_state["completed_phases"] = set()
+                st.session_state["interview_history"] = []
                 st.rerun()
 
             st.caption("Powered by FastAPI • ChromaDB • Streamlit")

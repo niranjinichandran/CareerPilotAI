@@ -1,110 +1,115 @@
+import json
 import streamlit as st
-import requests
-
-API_BASE_URL = "http://127.0.0.1:8000/api"
+from backend.core.database import SessionLocal
+from backend.models.interview import InterviewSessionModel
+from ai.adaptive_interview import AdaptiveInterviewEngine
 
 def render_interview_page():
-    st.markdown("""
+    user = st.session_state.get("user")
+    user_id = user.get("id") if user else None
+    user_name = user.get("full_name", "Candidate") if user else "Candidate"
+    user_role = user.get("target_role", "AI Engineer") if user else "AI Engineer"
+
+    st.markdown(f"""
         <div class="glass-card">
             <h2>🎙️ Adaptive AI Mock Interview & Memory Engine</h2>
-            <p style="color:#94a3b8;">Practice technical interview questions that dynamically adapt based on your target role, weak topics, and past evaluation history.</p>
+            <p style="color:#94a3b8;">Practice technical interview questions tailored for <b style="color:#818cf8;">{user_role}</b> that dynamically adapt based on your answer quality and technical depth.</p>
         </div>
     """, unsafe_allow_html=True)
 
+    # Fetch interview sessions from DB for this user_id
+    db = SessionLocal()
+    db_history = []
+    try:
+        if user_id:
+            records = db.query(InterviewSessionModel).filter(InterviewSessionModel.user_id == user_id).all()
+            for r in records:
+                try:
+                    items = json.loads(r.history_json or "[]")
+                    db_history.extend(items)
+                except Exception:
+                    pass
+    except Exception:
+        pass
+    finally:
+        db.close()
+
     if "interview_history" not in st.session_state:
-        st.session_state["interview_history"] = []
+        st.session_state["interview_history"] = db_history
 
     col_c1, col_c2, col_c3 = st.columns(3)
     with col_c1:
-        target_role = st.selectbox("Target Role", ["AI Engineer", "GenAI Developer", "LLM Application Engineer", "Full Stack AI Developer"])
+        target_role = st.text_input("Target Interview Role", value=user_role)
     with col_c2:
         difficulty = st.selectbox("Difficulty Level", ["Intermediate", "Beginner", "Advanced"])
     with col_c3:
-        topics = st.multiselect("Interview Topics", ["RAG", "LLM", "Prompt Engineering", "FastAPI", "Python"], default=["RAG", "Prompt Engineering", "FastAPI"])
+        topics = st.multiselect("Interview Topics", ["System Architecture", "Python", "SQL", "REST APIs", "Docker", "Machine Learning", "Prompt Engineering"], default=["System Architecture", "REST APIs"])
+
+    engine = AdaptiveInterviewEngine()
 
     if st.button("🏁 Start / Reset Mock Interview Session", type="secondary"):
-        try:
-            res = requests.post(
-                f"{API_BASE_URL}/interview/start",
-                json={"target_role": target_role, "difficulty": difficulty, "topics": topics},
-                timeout=5
-            )
-            data = res.json()
-            st.session_state["curr_q"] = data["question"]
-            st.session_state["session_id"] = data.get("session_id")
-            st.success("New interview session started!")
-        except Exception:
-            st.session_state["curr_q"] = {
-                "id": "rag_q1",
-                "topic": "RAG",
-                "difficulty": difficulty,
-                "question": "What is Retrieval-Augmented Generation (RAG) and how does it reduce hallucinations in LLM applications?",
-                "key_concepts": ["retrieval", "augmented", "generation", "hallucinations", "embeddings", "vector database"]
-            }
-            st.success("Session started (Local Mode)!")
+        q = engine.start_session(target_role=target_role, difficulty=difficulty, topics=topics)
+        st.session_state["curr_q"] = q
+        st.success(f"New interview session started for {target_role}!")
 
     curr_q = st.session_state.get("curr_q")
     if not curr_q:
-        curr_q = {
-            "id": "rag_q1",
-            "topic": "RAG",
-            "difficulty": "Intermediate",
-            "question": "What is Retrieval-Augmented Generation (RAG) and how does it reduce hallucinations in LLM applications?",
-            "key_concepts": ["retrieval", "augmented", "generation", "hallucinations", "embeddings", "vector database"]
-        }
+        curr_q = engine.start_session(target_role=target_role, difficulty=difficulty, topics=topics)
         st.session_state["curr_q"] = curr_q
 
     st.markdown("---")
-    st.subheader(f"📌 Current Question — Topic: [{curr_q['topic']}] ({curr_q['difficulty']})")
+    st.subheader(f"📌 Current Question — Topic: [{curr_q.get('topic', 'General')}] ({curr_q.get('difficulty', 'Intermediate')})")
     
     st.markdown(f"""
         <div style="background:rgba(15,23,42,0.9); border-left:4px solid #6366f1; border-radius:8px; padding:20px; font-size:18px; color:#f8fafc;">
-            {curr_q['question']}
+            {curr_q.get('question', '')}
         </div>
     """, unsafe_allow_html=True)
 
-    user_ans = st.text_area("Write your technical answer below:", height=150, placeholder="Explain technical mechanisms, vector search, embeddings, prompt context, and trade-offs...")
+    user_ans = st.text_area("Write your technical answer below:", height=150, placeholder="Explain technical mechanisms, architecture, data structures, trade-offs, and design choices...")
 
     col_b1, col_b2 = st.columns([1, 1])
 
     with col_b1:
-        if st.button("Submit Answer for AI Evaluation 🚀", type="primary"):
+        if st.button("Submit Answer for AI Evaluation 🚀", type="primary", use_container_width=True):
             if not user_ans or len(user_ans.strip()) < 5:
-                st.warning("Please enter a detailed answer before submitting.")
+                st.warning("Please enter a detailed technical answer before submitting.")
             else:
-                with st.spinner("AI evaluating technical depth, concept coverage, and structure..."):
-                    try:
-                        res = requests.post(
-                            f"{API_BASE_URL}/interview/answer",
-                            json={"question_id": curr_q["id"], "user_answer": user_ans},
-                            timeout=5
-                        )
-                        eval_res = res.json()
-                    except Exception:
-                        eval_res = {
-                            "score": 82.0,
-                            "feedback": "Great explanation! You covered the core concepts of retrieval and hallucination prevention.",
-                            "concepts_covered": ["retrieval", "generation", "vector database"],
-                            "missing_concepts": ["embeddings"],
-                            "strengths": ["Clear narrative", "Accurate technical terms"],
-                            "weaknesses": ["Explain the role of dense vector embeddings"],
-                            "sample_ideal_answer": "RAG retrieves relevant document context from a vector database using similarity search and passes it into the LLM prompt, eliminating hallucinations.",
-                            "next_question": {
-                                "id": "rag_q2",
-                                "topic": "RAG",
-                                "difficulty": "Advanced",
-                                "question": "How do embeddings and vector databases help retrieve relevant documents for RAG queries?",
-                                "key_concepts": ["embeddings", "vector database", "cosine similarity"]
-                            }
-                        }
+                with st.spinner("AI evaluating technical depth, concept coverage, and reasoning..."):
+                    eval_res = engine.evaluate_answer(
+                        question_id=curr_q.get("id", "q1"),
+                        user_answer=user_ans,
+                        question_obj=curr_q
+                    )
 
-                    st.session_state["interview_history"].append({
-                        "question": curr_q["question"],
-                        "topic": curr_q["topic"],
+                    new_hist_item = {
+                        "question": curr_q.get("question", ""),
+                        "topic": curr_q.get("topic", "General"),
                         "user_answer": user_ans,
                         "score": eval_res["score"],
                         "feedback": eval_res["feedback"]
-                    })
+                    }
+                    st.session_state["interview_history"].append(new_hist_item)
+
+                    # SAVE INTERVIEW RECORD TO DB FOR CANDIDATE USER_ID
+                    if user_id:
+                        db_sess = SessionLocal()
+                        try:
+                            int_rec = InterviewSessionModel(
+                                user_id=user_id,
+                                target_role=target_role,
+                                difficulty=difficulty,
+                                topics=json.dumps(topics),
+                                weak_skills_json=json.dumps(eval_res.get("missing_concepts", [])),
+                                history_json=json.dumps(st.session_state["interview_history"]),
+                                overall_score=eval_res["score"]
+                            )
+                            db_sess.add(int_rec)
+                            db_sess.commit()
+                        except Exception:
+                            db_sess.rollback()
+                        finally:
+                            db_sess.close()
 
                     st.markdown("---")
                     st.markdown(f"### 🎯 Evaluation Score: `{eval_res['score']} / 100`")
@@ -113,45 +118,39 @@ def render_interview_page():
                     col_s1, col_s2 = st.columns(2)
                     with col_s1:
                         st.markdown("#### 💪 Key Strengths")
-                        for str_item in eval_res["strengths"]:
+                        for str_item in eval_res.get("strengths", []):
                             st.markdown(f"- ✅ {str_item}")
-                        st.markdown(f"**Concepts Covered:** {', '.join(eval_res['concepts_covered']) if eval_res['concepts_covered'] else 'None'}")
+                        st.markdown(f"**Concepts Covered:** {', '.join(eval_res.get('concepts_covered', [])) if eval_res.get('concepts_covered') else 'None'}")
 
                     with col_s2:
                         st.markdown("#### 🎯 Areas for Improvement")
-                        for wk_item in eval_res["weaknesses"]:
+                        for wk_item in eval_res.get("weaknesses", []):
                             st.markdown(f"- ⚠️ {wk_item}")
-                        st.markdown(f"**Missing Key Concepts:** {', '.join(eval_res['missing_concepts']) if eval_res['missing_concepts'] else 'None'}")
+                        st.markdown(f"**Missing Key Concepts:** {', '.join(eval_res.get('missing_concepts', [])) if eval_res.get('missing_concepts') else 'None'}")
 
                     with st.expander("💡 View Ideal Sample Answer"):
-                        st.write(eval_res["sample_ideal_answer"])
+                        st.write(eval_res.get("sample_ideal_answer", ""))
 
                     if eval_res.get("next_question"):
                         st.session_state["next_q_cache"] = eval_res["next_question"]
 
     with col_b2:
-        if st.button("Next Adaptive Question ➡️"):
+        if st.button("Next Adaptive Question ➡️", use_container_width=True):
             if "next_q_cache" in st.session_state:
                 st.session_state["curr_q"] = st.session_state["next_q_cache"]
                 del st.session_state["next_q_cache"]
             else:
-                st.session_state["curr_q"] = {
-                    "id": "pe_q1",
-                    "topic": "Prompt Engineering",
-                    "difficulty": "Intermediate",
-                    "question": "Describe Few-Shot Prompting and Chain-of-Thought (CoT) prompting. How do they improve LLM reasoning performance?",
-                    "key_concepts": ["few-shot", "chain-of-thought", "cot", "reasoning"]
-                }
+                st.session_state["curr_q"] = engine.start_session(target_role=target_role, difficulty=difficulty, topics=topics)
             st.rerun()
 
     st.markdown("---")
-    st.subheader("🧠 Interview Memory & Performance Log")
+    st.subheader(f"🧠 Interview Memory Log for {user_name}")
     history = st.session_state.get("interview_history", [])
     if not history:
         st.info("No questions answered yet in this session. Submit an answer above to build your memory log!")
     else:
         for idx, h in enumerate(reversed(history)):
-            with st.expander(f"Question {len(history)-idx}: [{h['topic']}] — Score: {h['score']}/100"):
-                st.write(f"**Question:** {h['question']}")
-                st.write(f"**Your Answer:** {h['user_answer']}")
-                st.write(f"**AI Feedback:** {h['feedback']}")
+            with st.expander(f"Question {len(history)-idx}: [{h.get('topic', 'General')}] — Score: {h.get('score', 0)}/100"):
+                st.write(f"**Question:** {h.get('question', '')}")
+                st.write(f"**Your Answer:** {h.get('user_answer', '')}")
+                st.write(f"**AI Feedback:** {h.get('feedback', '')}")
