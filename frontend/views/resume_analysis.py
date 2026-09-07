@@ -15,10 +15,10 @@ def render_resume_analysis_page():
     user_id = user.get("id")
     target_role = user.get("target_role", "Custom Career Role")
 
-    st.markdown("""
+    st.markdown(f"""
         <div class="glass-card">
             <h2>📄 Resume & Job Description Analyzer</h2>
-            <p style="color:#94a3b8;">Upload your resume and paste your target job description. Edit and customize your extracted profile skills before computing your transparent 5-part candidate match score.</p>
+            <p style="color:#94a3b8;">Upload your resume and paste your target job description for <b style="color:#818cf8;">{target_role}</b>. Edit and customize your extracted profile skills before computing your transparent 5-part candidate match score.</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -47,7 +47,7 @@ def render_resume_analysis_page():
                 st.session_state["raw_resume_text"] = extracted_text
                 st.session_state["parsed_skills"] = ext_skills
                 st.session_state["resume_skills"] = ext_skills
-                st.success(f"Extracted {len(ext_skills)} skills from uploaded resume file '{filename}'!")
+                st.success(f"Extracted {len(ext_skills)} skills from resume file '{filename}'!")
             elif sample_resume.strip():
                 ext_skills = parser.extract_skills(sample_resume)
                 st.session_state["raw_resume_text"] = sample_resume
@@ -71,28 +71,27 @@ def render_resume_analysis_page():
     
     # ------------------- EDITABLE EXTRACTED PROFILE SKILLS SECTION -------------------
     st.subheader("✏️ Editable Extracted Profile Skills")
-    st.caption("Add, remove, or modify any skills extracted from your resume below before running the match calculation:")
+    st.caption("Verify, add, remove, or modify skills extracted from your resume below before running the match calculation:")
 
-    # Initialize current skills in session state
     if "resume_skills" not in st.session_state or not st.session_state["resume_skills"]:
         st.session_state["resume_skills"] = st.session_state.get("parsed_skills", ["Python", "SQL", "Git", "REST APIs"])
 
     current_skills_list = st.session_state["resume_skills"]
 
-    # Comma-separated text input for instant editing
+    # Comma-separated text area for direct editing
     skills_text_val = ", ".join(current_skills_list)
     edited_skills_str = st.text_area(
         "Current Profile Skills (Comma Separated - Edit directly):",
         value=skills_text_val,
         height=80,
-        help="You can add new skills or delete skills by editing this comma-separated text."
+        help="Edit skills directly in this text area."
     )
 
     # Parse edited skills from text area
     updated_skills = [s.strip() for s in edited_skills_str.split(",") if s.strip()]
     st.session_state["resume_skills"] = updated_skills
 
-    # Display current skills as interactive badge tags
+    # Display active skill badge tags
     st.markdown("#### Currently Active Candidate Skills:")
     if updated_skills:
         badges_html = " ".join([f"<span class='badge-matched'>{sk}</span>" for sk in updated_skills])
@@ -100,10 +99,10 @@ def render_resume_analysis_page():
     else:
         st.info("No skills listed. Type your skills in the text box above.")
 
-    # Quick Add Skill helper input
+    # Manual Add Skill input
     col_add1, col_add2 = st.columns([3, 1])
     with col_add1:
-        new_skill_input = st.text_input("Add a missing skill manually:", placeholder="e.g. Docker, TensorFlow, AWS, React...", key="new_skill_input")
+        new_skill_input = st.text_input("Add a skill manually:", placeholder="e.g. Docker, TensorFlow, AWS, React...", key="new_skill_input")
     with col_add2:
         st.markdown("<div style='margin-top:28px;'></div>", unsafe_allow_html=True)
         if st.button("➕ Add Skill", type="secondary", use_container_width=True):
@@ -116,7 +115,7 @@ def render_resume_analysis_page():
 
     st.markdown("---")
 
-    # ------------------- RUN MATCH ANALYSIS -------------------
+    # ------------------- DIRECT IN-MEMORY MATCH ANALYSIS -------------------
     if st.button("🚀 Analyze Resume & Compute Candidate Match Score", type="primary", use_container_width=True):
         final_candidate_skills = st.session_state["resume_skills"]
         current_jd_text = st.session_state.get("jd_text", jd_text)
@@ -187,9 +186,9 @@ def render_resume_analysis_page():
                     db.add(analysis_rec)
                     db.commit()
 
-                    st.success(f"✅ Resume analysis complete for {user.get('full_name')}! Match Score: {gap_result['overall_match_percentage']}%. Go to Candidate Dashboard to view full results.")
-                except Exception as e:
+                    st.success(f"✅ Match Analysis Complete! Candidate Match Score: {gap_result['overall_match_percentage']}%. Go to Candidate Dashboard to view your full results.")
+                except Exception:
                     db.rollback()
-                    st.success(f"Analysis calculated! Match Score: {gap_result['overall_match_percentage']}%.")
+                    st.success(f"✅ Match Analysis Complete! Candidate Match Score: {gap_result['overall_match_percentage']}%.")
                 finally:
                     db.close()

@@ -16,7 +16,7 @@ def render_dashboard_page():
     user_name = user.get("full_name", "Candidate")
     target_role = user.get("target_role", "Custom Career Role")
 
-    # Fetch candidate analysis record from DB for this user_id
+    # Query database for saved analysis and interview sessions for THIS candidate user_id
     db = SessionLocal()
     analysis_record = None
     interview_records = []
@@ -32,22 +32,22 @@ def render_dashboard_page():
     st.markdown(f"""
         <div class="glass-card">
             <h2>📊 Candidate Career Progress Dashboard</h2>
-            <p style="color:#94a3b8;">Welcome back, <b>{user_name}</b>! Real-time career readiness analytics for target role: <b style="color:#818cf8;">{target_role}</b>.</p>
+            <p style="color:#94a3b8;">Welcome back, <b>{user_name}</b>! Real-time candidate analytics for target role: <b style="color:#818cf8;">{target_role}</b>.</p>
         </div>
     """, unsafe_allow_html=True)
 
-    # Determine if candidate has uploaded a resume & analyzed skills
-    has_uploaded_resume = analysis_record is not None or st.session_state.get("match_data") is not None
+    # STRICT CHECK: Has candidate uploaded a resume?
+    has_uploaded_resume = (analysis_record is not None) or (st.session_state.get("match_data") is not None)
 
     if not has_uploaded_resume:
-        # Initial State (No resume uploaded yet) -> All Metrics 0
+        # Initial state before resume upload -> ALL SCORES AND SKILL COUNTS ARE 0
         match_score = 0.0
         matched_skills = []
         missing_skills = []
         high_priority_skills = []
         interview_avg_score = 0.0
     else:
-        # Candidate has uploaded resume -> Load saved scores & skills
+        # Resume has been uploaded -> Read real computed values from DB or session
         if analysis_record:
             match_score = round(analysis_record.match_score, 1)
             try:
@@ -66,7 +66,7 @@ def render_dashboard_page():
             high_priority_skills = missing_skills[:2]
 
         if interview_records:
-            scores = [r.score for r in interview_records if r.score is not None]
+            scores = [r.overall_score for r in interview_records if r.overall_score is not None and r.overall_score > 0]
             interview_avg_score = round(sum(scores) / len(scores), 1) if scores else 0.0
         else:
             interview_avg_score = 0.0
@@ -74,28 +74,28 @@ def render_dashboard_page():
     # Display Top Metric Cards
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        render_metric_card("Resume Match Score", f"{match_score}%", "Upload Resume to Update" if not has_uploaded_resume else "Calculated Fit")
+        render_metric_card("Resume Match Score", f"{match_score}%", "Upload Resume to Compute" if not has_uploaded_resume else "Verified Fit")
     with c2:
         render_metric_card("Skills Matched", str(len(matched_skills)), "0 Matched" if not has_uploaded_resume else "Verified Skills")
     with c3:
-        render_metric_card("Skills Missing", str(len(missing_skills)), "0 Missing" if not has_uploaded_resume else "Gap Action Items")
+        render_metric_card("Skills Missing", str(len(missing_skills)), "0 Missing" if not has_uploaded_resume else "Skill Gap Items")
     with c4:
         render_metric_card("Interview Score", f"{interview_avg_score}/100", "No Interview Conducted" if interview_avg_score == 0 else "Average Performance")
 
     st.markdown("---")
 
     if not has_uploaded_resume:
-        st.markdown("""
+        st.markdown(f"""
             <div style="background: rgba(99, 102, 241, 0.12); border: 1px solid #6366f1; border-radius: 14px; padding: 24px; text-align: center; margin: 20px 0;">
                 <h3 style="color:#818cf8; margin-top:0;">📄 Resume Upload Required</h3>
                 <p style="color:#cbd5e1; font-size:15px; max-width:650px; margin: 0 auto 15px auto;">
-                    Welcome, <b>{}</b>! All metrics are currently showing <b>0</b> because you haven't uploaded a resume for target role <b>{}</b> yet.
+                    Welcome, <b>{user_name}</b>! Your candidate dashboard is currently at <b>0%</b> because you haven't uploaded a resume for target role <b>{target_role}</b> yet.
                 </p>
-                <p style="color:#94a3b8; font-size:14px; margin-bottom: 20px;">
-                    Navigate to <b>📄 Resume & JD Analysis</b> in the sidebar to upload your resume, edit your extracted profile skills, and generate your candidate score.
+                <p style="color:#94a3b8; font-size:14px; margin-bottom: 0;">
+                    Navigate to <b>📄 Resume & JD Analysis</b> in the sidebar to upload your resume, edit your profile skills, and generate your custom career analytics dashboard.
                 </p>
             </div>
-        """.format(user_name, target_role), unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
         col_chart1, col_chart2 = st.columns(2)
         with col_chart1:
@@ -104,7 +104,6 @@ def render_dashboard_page():
         with col_chart2:
             st.subheader("📊 Skill Breakdown Distribution")
             st.plotly_chart(create_skill_gap_bar_chart([], []), use_container_width=True)
-
     else:
         col_chart1, col_chart2 = st.columns(2)
         with col_chart1:
